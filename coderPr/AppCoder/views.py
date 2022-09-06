@@ -1,24 +1,101 @@
-from django.shortcuts import render
+import datetime
 
-from AppCoder.models import Familia
+from django.shortcuts import render, redirect
 
-def familiares(request):
-    familiar1 = Familia(nombre = 'Manuel',edad = 27 ,fecha = '1995-07-07' )
-    familiar1.save()
-    
+from AppCoder.forms import CursoFormulario, BusquedaCamadaFormulario
+from AppCoder.models import Curso, Entregable
 
-    familiar2 = Familia(nombre = 'Santiago',edad = 25 ,fecha = '1996-09-23' )
-    familiar1.save()
-    
 
-    familiar3 = Familia(nombre = 'Belen',edad = 23 ,fecha = '1999-04-13' )
-    familiar1.save()
+def busqueda_camada_post(request):
+
+    camada = request.GET.get('camada')
+
+    cursos = Curso.objects.filter(camada__icontains=camada)
     contexto = {
-        'familiar1' : familiar1,
-        'familiar2' : familiar2,
-        'familiar3' : familiar3
+        'cursos': cursos
     }
 
+    return render(request, 'AppCoder/curso_filtrado.html', contexto)
 
 
-    return render(request, 'flia.html', contexto)
+def busqueda_camada(request):
+
+    contexto = {
+        'form': BusquedaCamadaFormulario(),
+    }
+
+    return render(request, 'AppCoder/busqueda_camada.html', contexto)
+
+
+def curso_formulario(request):
+
+    if request.method == 'POST':
+
+        mi_formulario = CursoFormulario(request.POST)
+
+        if mi_formulario.is_valid():
+
+            data = mi_formulario.cleaned_data
+
+            curso1 = Curso(nombre=data.get('nombre'), camada=data.get('camada'))
+            curso1.save()
+
+            return redirect('AppCoderCursoFormulario')
+
+    cursos = Curso.objects.all()
+
+    contexto = {
+        'form': CursoFormulario(),
+        'cursos' : cursos
+    }
+
+    return render(request, 'AppCoder/curso_formulario.html', contexto)
+
+def inicio(request):
+    contexto = {
+        "valor1": "Este es un valor"
+    }
+    return render(request, 'index.html', contexto)
+
+def curso(request):
+    curso1 = Curso(nombre="Python", camada=31095)
+    curso1.save()
+    contexto = {
+        'curso': curso1
+    }
+
+    return render(request, 'AppCoder/curso.html', contexto)
+
+def entregable(request):
+    entregables = [
+        {
+            'nombre': "",
+            'fecha': "",
+            'entregado': True
+        },
+        {
+            'nombre': "",
+            'fecha': "",
+            'entregado': True
+        },
+        {
+            'nombre': "",
+            'fecha': "",
+            'entregado': True
+        },
+    ]
+    year = 2000
+    month = 10
+    day = 21
+    entregable1 = Entregable(
+        nombre="Anderson",
+        fecha_de_entrega=datetime.date(year=year, month=month, day=day),  # date year month day
+        entregado=True
+    )
+    entregable1.save()
+
+    contexto = {
+        'entregable': entregable1
+    }
+
+    return render(request, 'AppCoder/entregable.html', contexto)
